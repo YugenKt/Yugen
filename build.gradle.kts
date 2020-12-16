@@ -1,4 +1,5 @@
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
 
 plugins {
@@ -16,6 +17,15 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+    implementation("com.squareup.okhttp3:okhttp:4.9.0")
+    implementation("com.beust:klaxon:5.0.1")
+}
+
+tasks.withType<Jar>().configureEach {
+    manifest {
+        attributes("Implementation-Version" to version)
+    }
 }
 
 tasks.withType<DokkaTask>().configureEach {
