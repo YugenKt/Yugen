@@ -3,6 +3,7 @@ package yugen.util
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.time.Duration
@@ -20,7 +21,7 @@ internal class RatelimitBucket(
     refillEvery: Duration
 ) {
     private val tokenRefillLock = Mutex(true)
-    private val tokensAvailable = Object()
+    private val tokensAvailable = Mutex(false)
 
     // lock owners
     private val refillingLock = Object() // whilst the bucket is being refilled
@@ -36,7 +37,7 @@ internal class RatelimitBucket(
                     tokensLeft = tokens
                 }
                 tokenRefillLock.lock(consumptionLock)
-                tokensAvailable.notify()
+                tokensAvailable.unlock()
             }
         }
     }
@@ -73,12 +74,12 @@ internal class RatelimitBucket(
      *
      * @param amount Amount of tokens to take.
      */
-    fun consume(amount: Int = 1) {
+    suspend fun consume(amount: Int = 1) {
         if (tryConsume(amount)) return
 
-        synchronized(tokensAvailable) {
-            tokensAvailable.wait()
+        tokensAvailable.lock() // wait until the refill unlocks this
 
+        tokensAvailable.withLock {
             tryConsume(amount) // assume that call will always succeed, the first tryConsume call at the start of the
                                // fun throws an exception if it leads to an impossible amount of tokens being claimed.
         }
