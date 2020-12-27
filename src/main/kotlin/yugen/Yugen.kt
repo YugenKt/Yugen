@@ -8,9 +8,7 @@ import yugen.rest.UserAgentInterceptor
 import yugen.rest.await
 
 /**
- * A Yugen client.
- *
- * @property token The bot token that will be used for this client.
+ * A Yugen client. The provided [token] will be used to authenticate to Discord.
  */
 class Yugen(private val token: String) {
     private val okHttp = OkHttpClient.Builder().addNetworkInterceptor(UserAgentInterceptor()).build()

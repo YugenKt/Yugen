@@ -11,18 +11,12 @@ internal object Routes {
     val GetGateway = Route("GET", "/gateway/bot")
 
     /**
-     * A route.
-     *
-     * @param method The HTTP method for this route.
-     * @param url The API URL to this route.
+     * A route pointing to a [url] using the given [method] for the request.
      */
     internal class Route(private val method: String, private val url: String) {
         /**
-         * Turns the route into a request.
-         *
-         * @param params The parameters to fill in the URL.
-         * @param body A request body.
-         * @param token The bot token.
+         * Turns the route into a request with the given [body] and [params]. Optionally, a [token] can be provided
+         * for authenticated requests.
          */
         fun toRequest(params: Map<String, String>? = null, body: RequestBody? = null, token: String? = null): Request {
             val request = Request.Builder().url(

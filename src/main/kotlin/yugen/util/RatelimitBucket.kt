@@ -9,11 +9,10 @@ import kotlinx.coroutines.sync.withLock
 import java.time.Duration
 
 /**
- * An automatically refilling ratelimit bucket.
+ * An automatically refilling ratelimit bucket which refills to the given amount of [tokens].
  *
  * The bucket automatically starts the refill cycle when a token is *taken*, not on a constant loop.
  *
- * @param tokens The amount of tokens that the bucket should be filled with.
  * @param refillEvery The amount of time between each refill.
  */
 internal class RatelimitBucket(
@@ -43,9 +42,7 @@ internal class RatelimitBucket(
     }
 
     /**
-     * Attempts to consume tokens from the bucket.
-     *
-     * @param amount Amount of tokens to take.
+     * Attempts to consume an [amount] of tokens from the bucket.
      */
     fun tryConsume(amount: Int = 1): Boolean {
         if (amount > tokens) {
@@ -70,9 +67,7 @@ internal class RatelimitBucket(
     }
 
     /**
-     * Consumes tokens from the bucket. This method will suspend until the tokens are available.
-     *
-     * @param amount Amount of tokens to take.
+     * Consumes an [amount] of tokens from the bucket. This method will suspend until the tokens are available.
      */
     suspend fun consume(amount: Int = 1) {
         if (tryConsume(amount)) return
