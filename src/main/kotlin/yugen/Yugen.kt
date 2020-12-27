@@ -17,6 +17,9 @@ class Yugen(private val token: String) {
     private val parser: Parser = Parser.default()
     private lateinit var gatewayWsUrl: String
 
+    /**
+     * Connects the client to Discord.
+     */
     suspend fun connect() {
         val gatewayResponse = okHttp.newCall(Routes.GetGateway.toRequest(token = token)).await()
         if (gatewayResponse.code == 401) throw IllegalArgumentException("Invalid token provided.")
