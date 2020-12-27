@@ -1,4 +1,3 @@
-import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
 
@@ -16,33 +15,55 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
+    implementation(kotlin("stdlib-jdk8"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
     implementation("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("com.beust:klaxon:5.0.1")
     implementation("org.slf4j:slf4j-api:1.7.30")
+
+    // logging for tests
+    testImplementation("ch.qos.logback:logback-classic:1.2.3")
+    testImplementation("ch.qos.logback:logback-core:1.2.3")
+
+    // kotlin test
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+
+    // junit
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
 }
 
-tasks.withType<Jar>().configureEach {
-    manifest {
-        attributes("Implementation-Version" to version)
+tasks {
+    withType<KotlinCompile>().configureEach {
+        kotlinOptions.jvmTarget = "1.8"
     }
-}
 
-tasks.withType<DokkaTask>().configureEach {
-    outputDirectory.set(buildDir.resolve("../docs"))
+    test {
+        useJUnitPlatform()
+    }
 
-    dokkaSourceSets {
-        named("main") {
-            //moduleName.set("Yugen")
-            //moduleVersion.set(version as String)
+    jar {
+        manifest {
+            attributes("Implementation-Version" to archiveVersion)
+        }
+    }
 
-            sourceLink {
-                localDirectory.set(file("src/main/kotlin"))
-                remoteUrl.set(URL("https://github.com/LewisTehMinerz/Yugen/tree/${version}/" +
-                        "src/main/kotlin"
-                ))
-                remoteLineSuffix.set("#L")
+    dokkaHtml {
+        outputDirectory.set(buildDir.resolve("../docs"))
+
+        dokkaSourceSets {
+            named("main") {
+                //moduleName.set("Yugen")
+                //moduleVersion.set(version as String)
+
+                sourceLink {
+                    localDirectory.set(file("src/main/kotlin"))
+                    remoteUrl.set(URL("https://github.com/LewisTehMinerz/Yugen/tree/${version}/" +
+                            "src/main/kotlin"
+                    ))
+                    remoteLineSuffix.set("#L")
+                }
             }
         }
     }

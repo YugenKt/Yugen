@@ -97,3 +97,6 @@ hs_err_pid*
 
 # gradle caches
 .gradle/
+
+# test token
+src/test/resources/token.txt

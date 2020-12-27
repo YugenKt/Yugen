@@ -1,0 +1,1 @@
+Rename this file to token.txt and put a bot token in here!
