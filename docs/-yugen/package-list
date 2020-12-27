@@ -2,4 +2,5 @@ $dokka.format:html-v1
 $dokka.linkExtension:html
 
 yugen
+yugen.rest
 
