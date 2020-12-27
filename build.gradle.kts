@@ -20,6 +20,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
     implementation("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("com.beust:klaxon:5.0.1")
+    implementation("org.slf4j:slf4j-api:1.7.30")
 }
 
 tasks.withType<Jar>().configureEach {

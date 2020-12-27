@@ -12,7 +12,7 @@ import yugen.rest.await
  *
  * @property token The bot token that will be used for this client.
  */
-class Yugen(val token: String) {
+class Yugen(private val token: String) {
     private val okHttp = OkHttpClient.Builder().addNetworkInterceptor(UserAgentInterceptor()).build()
     private val parser: Parser = Parser.default()
     private lateinit var gatewayWsUrl: String
