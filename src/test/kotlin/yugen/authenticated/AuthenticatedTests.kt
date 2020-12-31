@@ -1,7 +1,8 @@
-package yugen
+package yugen.authenticated
 
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.*
+import yugen.Yugen
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AuthenticatedTests {
