@@ -15,7 +15,13 @@ internal object YugenOptions {
     const val gatewayVersion = 8
 
     /**
+     * The epoch for Discord snowflakes.
+     */
+    const val discordEpoch = 1420070400000
+
+    /**
      * The user agent the library uses to make requests to Discord.
      */
-    val userAgent = "Yugen/${this.javaClass.`package`.implementationVersion ?: "DEVELOPMENT"}"
+    val userAgent = "DiscordBot (https://github.com/YugenKt/Yugen, " +
+            "${this.javaClass.`package`.implementationVersion ?: "DEVELOPMENT"})"
 }
