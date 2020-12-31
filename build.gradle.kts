@@ -16,9 +16,10 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("reflect"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
     implementation("com.squareup.okhttp3:okhttp:4.9.0")
-    implementation("com.beust:klaxon:5.0.1")
+    implementation("com.google.code.gson:gson:2.8.6")
     implementation("org.slf4j:slf4j-api:1.7.30")
 
     // logging for tests
@@ -41,6 +42,8 @@ tasks {
 
     test {
         useJUnitPlatform()
+        systemProperties["logback.configurationFile"] =
+            File(projectDir, "src/test/resources/logback-test.xml").absolutePath
     }
 
     jar {

@@ -30,4 +30,9 @@ class AuthenticatedTests {
             }
         }
     }
+
+    @Test
+    fun pause() {
+        Thread.sleep(10000000)
+    }
 }
