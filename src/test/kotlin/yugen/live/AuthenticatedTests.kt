@@ -1,4 +1,4 @@
-package yugen.authenticated
+package yugen.live
 
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.*
