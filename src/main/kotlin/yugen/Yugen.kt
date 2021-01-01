@@ -17,10 +17,9 @@ class Yugen(private val token: String) {
     companion object {
         private val logger = getLogger()
     }
-
     private val okHttp = OkHttpClient.Builder().addNetworkInterceptor(UserAgentInterceptor()).build()
-    private lateinit var gatewayWsUrl: String
 
+    private lateinit var gatewayWsUrl: String
     private lateinit var wsClient: WebSocket
 
     /**
@@ -29,7 +28,7 @@ class Yugen(private val token: String) {
     suspend fun connect() {
         logger.trace("starting connection")
 
-        val gatewayResponse = okHttp.newCall(Routes.GetGateway.toRequest(token = token)).await()
+        val gatewayResponse = Routes.GetGateway.execute(token = token)
         if (gatewayResponse.code == 401) throw IllegalArgumentException("Invalid token provided.")
 
         @Suppress("BlockingMethodInNonBlockingContext")
@@ -60,7 +59,6 @@ class Yugen(private val token: String) {
                 )
             )
 
-            //logger.trace(identify.toString())
             webSocket.send(identify)
         }
 
