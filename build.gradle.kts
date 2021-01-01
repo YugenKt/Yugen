@@ -21,6 +21,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("com.google.code.gson:gson:2.8.6")
     implementation("org.slf4j:slf4j-api:1.7.30")
+    implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:6.0.0")
 
     // logging for tests
     testImplementation("ch.qos.logback:logback-classic:1.2.3")
