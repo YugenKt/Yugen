@@ -1,11 +1,10 @@
 package yugen
 
-import com.google.gson.Gson
 import com.google.gson.JsonParser
 import okhttp3.*
 import yugen.rest.Routes
 import yugen.rest.UserAgentInterceptor
-import yugen.rest.await
+import yugen.util.gateway.Opcode
 import yugen.util.getLogger
 import yugen.util.json
 import yugen.util.send
@@ -46,6 +45,9 @@ class Yugen(private val token: String) {
             private val logger = getLogger()
         }
 
+        private var heartbeatAcked = true
+        private var sinceLastAck = 0L
+
         override fun onOpen(webSocket: WebSocket, response: Response) {
             val identify = mapOf(
                 "op" to 2,
@@ -68,7 +70,7 @@ class Yugen(private val token: String) {
             val parsedData = JsonParser.parseString(text).asJsonObject
 
             when (val op = parsedData["op"].asInt) {
-                10 -> {
+                Opcode.HELLO -> {
                     // deal with HELLO here instead of sending them off
                     val helloData = parsedData["d"].asJsonObject
                     val heartbeatInterval = helloData["heartbeat_interval"].asInt
@@ -76,12 +78,28 @@ class Yugen(private val token: String) {
                     thread(name = "Heartbeat") {
                         while (true) {
                             Thread.sleep(heartbeatInterval.toLong())
+                            if (!heartbeatAcked) {
+                                logger.warn("Gateway didn't respond to heartbeat")
+                                webSocket.close(1008, "heartbeat not acked within heartbeat interval")
+                                return@thread
+                            }
                             logger.trace("heartbeat")
-                            if (!webSocket.send(mapOf("op" to 1))) {
+                            if (!webSocket.send(mapOf("op" to Opcode.HEARTBEAT))) {
                                 logger.error("Failed to send heartbeat")
                             }
+                            sinceLastAck = System.currentTimeMillis()
                         }
                     }
+                }
+
+                Opcode.HEARTBEAT -> {
+                    webSocket.send(mapOf("op" to Opcode.HEARTBEAT_ACK))
+                }
+
+                Opcode.HEARTBEAT_ACK -> {
+                    logger.trace("heartbeat ack took ${System.currentTimeMillis() - sinceLastAck}ms")
+                    sinceLastAck = 0
+                    heartbeatAcked = true
                 }
 
                 else -> throw NotImplementedError("opcode $op")
