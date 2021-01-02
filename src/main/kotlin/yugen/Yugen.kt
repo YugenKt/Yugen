@@ -87,12 +87,14 @@ class Yugen(private val token: String) {
                             if (!webSocket.send(mapOf("op" to Opcode.HEARTBEAT))) {
                                 logger.error("Failed to send heartbeat")
                             }
+                            heartbeatAcked = false
                             sinceLastAck = System.currentTimeMillis()
                         }
                     }
                 }
 
                 Opcode.HEARTBEAT -> {
+                    logger.trace("sent heartbeat back to discord")
                     webSocket.send(mapOf("op" to Opcode.HEARTBEAT_ACK))
                 }
 
@@ -101,6 +103,8 @@ class Yugen(private val token: String) {
                     sinceLastAck = 0
                     heartbeatAcked = true
                 }
+
+                Opcode.DISPATCH -> {}
 
                 else -> throw NotImplementedError("opcode $op")
             }
