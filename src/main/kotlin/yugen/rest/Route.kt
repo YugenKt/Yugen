@@ -74,8 +74,8 @@ internal object Routes {
                 bucketName = bucketName?.plus("-${params?.get("majorParam")!!}")
 
             if (
-                (ratelimitBucketIdentifier == null && response.headers["x-ratelimit-bucket"] != null) ||
-                (ratelimitBucketIdentifier != bucketName)
+                (ratelimitBucketIdentifier == null || ratelimitBucketIdentifier != bucketName) &&
+                response.headers["x-ratelimit-bucket"] != null
             ) {
                 ratelimitBucketIdentifier = bucketName!!
                 val limit = response.headers["x-ratelimit-limit"]!!.toLong()
