@@ -1,6 +1,7 @@
 package yugen.util
 
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.*
@@ -9,7 +10,7 @@ import org.slf4j.LoggerFactory
 import java.io.IOException
 import kotlin.coroutines.resumeWithException
 
-private val gson = Gson()
+private val gson = GsonBuilder().serializeNulls().create()
 
 @Suppress("EXPERIMENTAL_API_USAGE")
 internal suspend fun Call.await(): Response {
@@ -43,6 +44,10 @@ internal inline fun <reified T> T.getLogger(): Logger =
         LoggerFactory.getLogger(T::class.java)
     }
 
-internal fun WebSocket.send(data: Map<String, Any>) = this.send(gson.toJson(data, Map::class.java))
+internal fun WebSocket.send(data: Map<String, Any?>): Boolean {
+    val payload = gson.toJson(data, Map::class.java)
+    getLogger().trace("-> $payload")
+    return this.send(payload)
+}
 
 internal fun ResponseBody.json() = JsonParser.parseString(this.string()).asJsonObject
