@@ -47,27 +47,15 @@ class Yugen(private val token: String) {
 
         private var heartbeatAcked = true
         private var sinceLastAck = 0L
-
-        override fun onOpen(webSocket: WebSocket, response: Response) {
-            val identify = mapOf(
-                "op" to 2,
-                "d" to mapOf(
-                   "token" to token,
-                   "intents" to 0,
-                   "properties" to mapOf(
-                       "\$os" to System.getProperty("os.name"),
-                       "\$browser" to "Yugen",
-                       "\$device" to "Yugen"
-                   )
-                )
-            )
-
-            webSocket.send(identify)
-        }
+        private var seq: Int? = null
 
         override fun onMessage(webSocket: WebSocket, text: String) {
-            logger.trace("message: $text")
+            logger.trace("<- $text")
             val parsedData = JsonParser.parseString(text).asJsonObject
+
+            if (parsedData.has("s") && !parsedData["s"].isJsonNull) {
+                seq = parsedData["s"].asInt
+            }
 
             when (val op = parsedData["op"].asInt) {
                 Opcode.HELLO -> {
@@ -84,13 +72,29 @@ class Yugen(private val token: String) {
                                 return@thread
                             }
                             logger.trace("heartbeat")
-                            if (!webSocket.send(mapOf("op" to Opcode.HEARTBEAT))) {
+                            if (!webSocket.send(mapOf("op" to Opcode.HEARTBEAT, "d" to seq))) {
                                 logger.error("Failed to send heartbeat")
                             }
                             heartbeatAcked = false
                             sinceLastAck = System.currentTimeMillis()
                         }
                     }
+
+                    // send off identify payload
+                    val identify = mapOf(
+                        "op" to 2,
+                        "d" to mapOf(
+                            "token" to token,
+                            "intents" to 0,
+                            "properties" to mapOf(
+                                "\$os" to System.getProperty("os.name"),
+                                "\$browser" to "Yugen",
+                                "\$device" to "Yugen"
+                            )
+                        )
+                    )
+
+                    webSocket.send(identify)
                 }
 
                 Opcode.HEARTBEAT -> {
@@ -108,6 +112,10 @@ class Yugen(private val token: String) {
 
                 else -> throw NotImplementedError("opcode $op")
             }
+        }
+
+        override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+            logger.trace("websocket closed: $code -> $reason")
         }
     }
 }
