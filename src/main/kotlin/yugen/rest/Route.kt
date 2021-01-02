@@ -6,6 +6,7 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
 import yugen.YugenOptions
+import yugen.util.await
 import yugen.util.getLogger
 import java.time.Duration
 import java.time.Instant
