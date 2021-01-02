@@ -55,6 +55,7 @@ class Yugen(private val token: String) {
 
             if (parsedData.has("s") && !parsedData["s"].isJsonNull) {
                 seq = parsedData["s"].asInt
+                logger.trace("seq updated to $seq")
             }
 
             when (val op = parsedData["op"].asInt) {
