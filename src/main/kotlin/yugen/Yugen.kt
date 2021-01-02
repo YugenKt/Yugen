@@ -7,6 +7,7 @@ import yugen.rest.Routes
 import yugen.rest.UserAgentInterceptor
 import yugen.rest.await
 import yugen.util.getLogger
+import yugen.util.json
 import yugen.util.send
 import kotlin.concurrent.thread
 
@@ -32,7 +33,7 @@ class Yugen(private val token: String) {
         if (gatewayResponse.code == 401) throw IllegalArgumentException("Invalid token provided.")
 
         @Suppress("BlockingMethodInNonBlockingContext")
-        val gatewayJson = JsonParser.parseString(gatewayResponse.body!!.string()).asJsonObject
+        val gatewayJson = gatewayResponse.body!!.json()
 
         gatewayWsUrl = gatewayJson["url"].asString + "?v=${YugenOptions.gatewayVersion}&encoding=json"
         logger.trace("using $gatewayWsUrl")
