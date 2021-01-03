@@ -14,7 +14,7 @@ class EventBus {
         private val logger = getLogger()
     }
 
-    private val eventHandlers: MutableMap<KClass<out Event>, MutableMap<Any, MutableList<KCallable<*>>>> = mutableMapOf()
+    internal val eventHandlers: MutableMap<KClass<out Event>, MutableMap<Any, MutableList<KCallable<*>>>> = mutableMapOf()
 
     /**
      * Registers a [class]'s event handler methods. To mark a method as an event handler, annotate them with
