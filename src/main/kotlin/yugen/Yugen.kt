@@ -1,7 +1,10 @@
 package yugen
 
 import com.google.gson.JsonParser
+import kotlinx.coroutines.runBlocking
 import okhttp3.*
+import yugen.events.DispatchEvent
+import yugen.events.EventBus
 import yugen.rest.Routes
 import yugen.rest.UserAgentInterceptor
 import yugen.util.gateway.Opcode
@@ -18,6 +21,7 @@ class Yugen(private val token: String) {
         private val logger = getLogger()
     }
     private val okHttp = OkHttpClient.Builder().addNetworkInterceptor(UserAgentInterceptor()).build()
+    val eventBus = EventBus()
 
     private lateinit var gatewayWsUrl: String
     private lateinit var wsClient: WebSocket
@@ -37,10 +41,14 @@ class Yugen(private val token: String) {
         gatewayWsUrl = gatewayJson["url"].asString + "?v=${YugenOptions.gatewayVersion}&encoding=json"
         logger.trace("using $gatewayWsUrl")
 
-        wsClient = okHttp.newWebSocket(Request.Builder().url(gatewayWsUrl).build(), YugenWebsocketListener(token))
+        wsClient = okHttp.newWebSocket(
+            Request.Builder().url(gatewayWsUrl).build(), YugenWebsocketListener(token, eventBus))
     }
 
-    private class YugenWebsocketListener(private val token: String): WebSocketListener() {
+    private class YugenWebsocketListener(
+        private val token: String,
+        private val eventBus: EventBus
+    ): WebSocketListener() {
         companion object {
             private val logger = getLogger()
         }
@@ -50,6 +58,12 @@ class Yugen(private val token: String) {
         private var seq: Int? = null
 
         override fun onMessage(webSocket: WebSocket, text: String) {
+            runBlocking {
+                onMessageSuspend(webSocket, text)
+            }
+        }
+
+        suspend fun onMessageSuspend(webSocket: WebSocket, text: String) {
             logger.trace("<- $text")
             val parsedData = JsonParser.parseString(text).asJsonObject
 
@@ -109,7 +123,9 @@ class Yugen(private val token: String) {
                     heartbeatAcked = true
                 }
 
-                Opcode.DISPATCH -> {}
+                Opcode.DISPATCH -> {
+                    eventBus.fireEvent(DispatchEvent(parsedData["d"].asJsonObject))
+                }
 
                 else -> throw NotImplementedError("opcode $op")
             }

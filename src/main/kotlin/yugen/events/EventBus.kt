@@ -6,7 +6,10 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.callSuspend
 import kotlin.reflect.full.hasAnnotation
 
-internal class EventBus {
+/**
+ * An event bus that deals with dispatching events.
+ */
+class EventBus {
     companion object {
         private val logger = getLogger()
     }
