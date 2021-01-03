@@ -74,6 +74,6 @@ class EventTests {
         }
     }
 
-    class TestEvent : Event()
-    class SomeOtherEvent : Event()
+    class TestEvent : Event
+    class SomeOtherEvent : Event
 }
