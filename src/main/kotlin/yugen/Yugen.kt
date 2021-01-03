@@ -7,7 +7,9 @@ import yugen.events.DispatchEvent
 import yugen.events.EventBus
 import yugen.rest.Routes
 import yugen.rest.UserAgentInterceptor
+import yugen.util.gateway.CloseCode
 import yugen.util.gateway.Opcode
+import yugen.util.gateway.intentMap
 import yugen.util.getLogger
 import yugen.util.json
 import yugen.util.send
@@ -41,13 +43,21 @@ class Yugen(private val token: String) {
         gatewayWsUrl = gatewayJson["url"].asString + "?v=${YugenOptions.gatewayVersion}&encoding=json"
         logger.trace("using $gatewayWsUrl")
 
+        var requiredIntents = 0
+        eventBus.eventHandlers.keys
+            .map { intentMap[it] }
+            .forEach { logger.trace(it.toString()); it?.forEach { int -> requiredIntents += int.id } }
+
+        logger.trace("required intents calculated as $requiredIntents")
+
         wsClient = okHttp.newWebSocket(
-            Request.Builder().url(gatewayWsUrl).build(), YugenWebsocketListener(token, eventBus))
+            Request.Builder().url(gatewayWsUrl).build(), YugenWebsocketListener(token, eventBus, requiredIntents))
     }
 
     private class YugenWebsocketListener(
         private val token: String,
-        private val eventBus: EventBus
+        private val eventBus: EventBus,
+        private val requiredIntents: Int
     ): WebSocketListener() {
         companion object {
             private val logger = getLogger()
@@ -56,6 +66,10 @@ class Yugen(private val token: String) {
         private var heartbeatAcked = true
         private var sinceLastAck = 0L
         private var seq: Int? = null
+
+        override fun onOpen(webSocket: WebSocket, response: Response) {
+            logger.debug("Connected to gateway")
+        }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
             runBlocking {
@@ -100,7 +114,7 @@ class Yugen(private val token: String) {
                         "op" to 2,
                         "d" to mapOf(
                             "token" to token,
-                            "intents" to 0,
+                            "intents" to requiredIntents,
                             "properties" to mapOf(
                                 "\$os" to System.getProperty("os.name"),
                                 "\$browser" to "Yugen",
@@ -131,8 +145,14 @@ class Yugen(private val token: String) {
             }
         }
 
-        override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-            logger.trace("websocket closed: $code -> $reason")
+        override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+            logger.trace("websocket closing: $code -> $reason")
+            logger.debug("Disconnected from gateway")
+            if (code == CloseCode.DISALLOWED_INTENTS) {
+                logger.error("You have event handlers for events that required privileged intents, but the " +
+                        "privileged intents are not enabled. Will not reconnect to the gateway.")
+                return
+           }
         }
     }
 }

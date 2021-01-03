@@ -3,6 +3,8 @@ package yugen.live
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.*
 import yugen.Yugen
+import yugen.events.DispatchEvent
+import yugen.events.EventHandler
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AuthenticatedTests {
@@ -27,6 +29,11 @@ class AuthenticatedTests {
     fun `client should connect`() {
         assertDoesNotThrow {
             runBlocking {
+                client.eventBus.registerEvents(object {
+                    @EventHandler fun test(e: DispatchEvent) {
+                        println(e)
+                    }
+                })
                 client.connect()
             }
         }
