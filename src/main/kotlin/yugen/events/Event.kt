@@ -1,6 +1,8 @@
 package yugen.events
 
+import yugen.util.gateway.Intent
+
 /**
- * An event.
+ * An event with a list of required [intents], if any.
  */
-interface Event
+open class Event(val intents: List<Intent>? = null)
