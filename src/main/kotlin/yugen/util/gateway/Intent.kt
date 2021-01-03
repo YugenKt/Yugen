@@ -1,9 +1,16 @@
 package yugen.util.gateway
 
+import yugen.events.*
+
+internal val intentMap = mapOf(
+    DispatchEvent::class to Intent.values().toList(),
+    MessageCreateEvent::class to listOf(Intent.GUILD_MESSAGES, Intent.DIRECT_MESSAGES)
+)
+
 /**
  * Gateway intents.
  */
-enum class Intent(private val id: Int) {
+enum class Intent(val id: Int) {
     GUILDS(1 shl 0),
     GUILD_MEMBERS(1 shl 1),
     GUILD_BANS(1 shl 2),
